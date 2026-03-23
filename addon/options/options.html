@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Mirsal Settings</title>
+        <link rel="stylesheet" href="options.css" />
+    </head>
+    <body>
+        <div class="page">
+            <header class="header">
+                <h1>مرسال <span>Mirsal</span></h1>
+                <p class="subtitle">universal browser to shell bridge</p>
+            </header>
+
+            <section class="section">
+                <h2>Shade</h2>
+                <p class="section-desc">
+                    Dynamic page darkening using your palette colors.
+                </p>
+
+                <div class="row">
+                    <div class="row-label">
+                        <span>Enable Shade</span>
+                        <small>Recolor all pages using your palette</small>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="shade-enabled" />
+                        <span class="track"></span>
+                    </label>
+                </div>
+
+                <div class="row">
+                    <div class="row-label">
+                        <span>Image dimming</span>
+                        <small>Reduce brightness of images and video</small>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="shade-dim-media" />
+                        <span class="track"></span>
+                    </label>
+                </div>
+
+                <div class="row">
+                    <div class="row-label">
+                        <span>Image brightness</span>
+                        <small>How much to dim images when enabled</small>
+                    </div>
+                    <div class="row-control">
+                        <input
+                            type="range"
+                            id="shade-media-brightness"
+                            min="50"
+                            max="100"
+                            step="5"
+                        />
+                        <span
+                            class="range-value"
+                            id="shade-media-brightness-value"
+                            >85%</span
+                        >
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Palette</h2>
+                <p class="section-desc">
+                    Browser chrome theming from your system palette.
+                </p>
+
+                <div class="row">
+                    <div class="row-label">
+                        <span>Enable Palette</span>
+                        <small>Apply palette colors to Firefox chrome</small>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="palette-enabled" />
+                        <span class="track"></span>
+                    </label>
+                </div>
+
+                <div class="row">
+                    <div class="row-label">
+                        <span>Poll interval</span>
+                        <small
+                            >How often to check for palette changes
+                            (seconds)</small
+                        >
+                    </div>
+                    <div class="row-control">
+                        <input
+                            type="range"
+                            id="palette-poll-interval"
+                            min="1"
+                            max="30"
+                            step="1"
+                        />
+                        <span
+                            class="range-value"
+                            id="palette-poll-interval-value"
+                            >5s</span
+                        >
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Downloads</h2>
+                <p class="section-desc">
+                    Intercept downloads and pass them to the shell.
+                </p>
+
+                <div class="row">
+                    <div class="row-label">
+                        <span>Enable Downloads</span>
+                        <small>Hand downloads off to noon ipc</small>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="downloads-enabled" />
+                        <span class="track"></span>
+                    </label>
+                </div>
+            </section>
+
+            <div class="status" id="status"></div>
+        </div>
+        <script src="options.js"></script>
+    </body>
+</html>

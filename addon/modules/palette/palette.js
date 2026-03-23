@@ -1,6 +1,8 @@
 const Palette = (() => {
   let _port = null;
   let _lastMtime = 0;
+  let _enabled = true;
+  let _scheme = null;
 
   function applyTheme(scheme) {
     browser.theme.update({
@@ -49,11 +51,16 @@ const Palette = (() => {
   }
 
   function handleMessage(msg) {
-    if (msg.type === "palette_colors" && msg.payload) {
-      _lastMtime = msg.mtime ?? _lastMtime;
-      applyTheme(msg.payload);
-      if (msg.reload) browser.runtime.reload();
-    }
+    if (msg.type !== "palette_colors" || !msg.payload) return;
+    _lastMtime = msg.mtime ?? _lastMtime;
+    _scheme = msg.payload;
+    if (_enabled) applyTheme(_scheme);
+    Shade.applyScheme(_scheme);
+  }
+
+  function applyConfig(cfg) {
+    _enabled = cfg["palette.enabled"];
+    if (!_enabled) browser.theme.reset();
   }
 
   function connect() {
@@ -67,6 +74,11 @@ const Palette = (() => {
   }
 
   function init() {
+    browser.storage.local.get(CONFIG_DEFAULTS).then(applyConfig);
+    browser.runtime.onMessage.addListener((msg) => {
+      if (msg.type === "settings_updated") applyConfig(msg.settings);
+      if (msg.type === "palette.request") return Promise.resolve(_scheme);
+    });
     connect();
   }
 

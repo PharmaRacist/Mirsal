@@ -1,0 +1,188 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600&display=swap");
+
+body {
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    background: var(--c-surface);
+    color: var(--c-on-surface);
+    min-height: 100vh;
+}
+
+.page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+.header h1 {
+    font-family: "Cairo", sans-serif;
+    font-size: 72px;
+    font-weight: 300;
+    color: var(--c-primary);
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.header h1 span {
+    display: block;
+    font-family: system-ui, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--c-on-surface-variant);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 8px;
+}
+
+.subtitle {
+    color: var(--c-outline);
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.section {
+    background: var(--c-surface-container);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.section h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--c-primary);
+    margin-bottom: 2px;
+}
+
+.section-desc {
+    font-size: 12px;
+    color: var(--c-outline);
+    margin-bottom: 12px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px solid var(--c-outline-variant);
+    gap: 16px;
+}
+
+.row:first-of-type {
+    border-top: none;
+}
+
+.row-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.row-label span {
+    font-size: 14px;
+    color: var(--c-on-surface);
+}
+
+.row-label small {
+    font-size: 12px;
+    color: var(--c-on-surface-variant);
+}
+
+.row-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.range-value {
+    font-size: 12px;
+    color: var(--c-primary);
+    min-width: 32px;
+    text-align: right;
+}
+
+input[type="range"] {
+    accent-color: var(--c-primary);
+    width: 120px;
+    cursor: pointer;
+}
+
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.track {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: var(--c-outline-variant);
+    transition: background 0.2s;
+}
+
+.track::after {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--c-on-surface-variant);
+    top: 3px;
+    left: 3px;
+    transition:
+        transform 0.2s,
+        background 0.2s;
+}
+
+.toggle input:checked + .track {
+    background: var(--c-primary-container);
+}
+
+.toggle input:checked + .track::after {
+    transform: translateX(20px);
+    background: var(--c-primary);
+}
+
+.status {
+    font-size: 12px;
+    color: var(--c-primary);
+    text-align: center;
+    height: 20px;
+    transition: opacity 0.3s;
+}
