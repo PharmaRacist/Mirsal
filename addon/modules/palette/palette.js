@@ -1,48 +1,74 @@
 const Palette = (() => {
-  let _send = null;
+  let _port = null;
+  let _lastMtime = 0;
 
   function applyTheme(scheme) {
     browser.theme.update({
       colors: {
-        frame: scheme.primary,
+        frame: scheme.surface_container_lowest,
+        frame_inactive: scheme.surface_dim,
+        tab_background_text: scheme.on_surface_variant,
+        tab_text: scheme.on_surface,
+        tab_selected: scheme.surface_container,
+        tab_line: "transparent",
+        tab_loading: scheme.primary,
         toolbar: scheme.surface_container,
         toolbar_text: scheme.on_surface,
-        tab_background_text: scheme.on_surface_variant,
-        tab_selected: scheme.secondary_container,
-        tab_line: scheme.primary,
-        popup: scheme.surface_container_low,
+        toolbar_top_separator: "transparent",
+        toolbar_bottom_separator: "transparent",
+        toolbar_vertical_separator: scheme.outline_variant,
+        toolbar_field: scheme.surface_container_high,
+        toolbar_field_text: scheme.on_surface,
+        toolbar_field_border: "transparent",
+        toolbar_field_focus: scheme.surface_container_highest,
+        toolbar_field_text_focus: scheme.on_surface,
+        toolbar_field_border_focus: scheme.primary,
+        toolbar_field_highlight: scheme.primary_container,
+        toolbar_field_highlight_text: scheme.on_primary_container,
+        toolbar_field_separator: scheme.outline_variant,
+        icons: scheme.on_surface_variant,
+        icons_attention: scheme.primary,
+        button_background_hover: scheme.surface_container_high,
+        button_background_active: scheme.surface_container_highest,
+        popup: scheme.surface_bright,
         popup_text: scheme.on_surface,
         popup_border: scheme.outline_variant,
         popup_highlight: scheme.secondary_container,
         popup_highlight_text: scheme.on_secondary_container,
         sidebar: scheme.surface_container_low,
         sidebar_text: scheme.on_surface,
+        sidebar_border: scheme.outline_variant,
         sidebar_highlight: scheme.secondary_container,
         sidebar_highlight_text: scheme.on_secondary_container,
-        sidebar_border: scheme.outline_variant,
-        button_background_hover: scheme.surface_container_high,
-        button_background_active: scheme.surface_container_highest,
-        icons: scheme.on_surface_variant,
-        icons_attention: scheme.primary,
+        bookmark_text: scheme.on_surface,
+        ntp_background: scheme.surface,
+        ntp_card_background: scheme.surface_container_low,
+        ntp_text: scheme.on_surface,
       },
     });
   }
 
-  function handleResponse(response) {
-    if (response?.type === "palette_colors" && response.payload) {
-      applyTheme(response.payload);
+  function handleMessage(msg) {
+    if (msg.type === "palette_colors" && msg.payload) {
+      _lastMtime = msg.mtime ?? _lastMtime;
+      applyTheme(msg.payload);
+      if (msg.reload) browser.runtime.reload();
     }
   }
 
-  function refresh() {
-    _send("palette.get", null);
+  function connect() {
+    _port = browser.runtime.connectNative("noon_mirsal");
+    _port.onMessage.addListener(handleMessage);
+    _port.onDisconnect.addListener(() => {
+      _port = null;
+      setTimeout(connect, 3000);
+    });
+    _port.postMessage({ type: "watch", payload: null });
   }
 
-  function init(sendFn, onResponse) {
-    _send = sendFn;
-    onResponse("palette_colors", handleResponse);
-    refresh();
+  function init() {
+    connect();
   }
 
-  return { init, refresh };
+  return { init };
 })();

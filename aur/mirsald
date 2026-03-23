@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, "/usr/lib/noon-mirsal")
 import protocol
 
-if len(sys.argv) > 1:
+if len(sys.argv) > 1 and sys.argv[1].startswith("--"):
     arg = sys.argv[1]
     if arg == "--help":
         print("usage: mirsald [--help] [--pull-palette]")
@@ -57,7 +57,6 @@ if t == "downloads.add":
         ]
     )
     protocol.write({"status": "ok"})
-
 elif t == "palette.get":
     cache = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
     path = os.path.join(cache, "noon", "user", "generated", "colors", "firefox.json")
@@ -67,6 +66,5 @@ elif t == "palette.get":
         protocol.write({"type": "palette_colors", "payload": palette})
     except Exception as e:
         protocol.write({"type": "palette_colors", "error": str(e)})
-
 else:
     protocol.write({"status": "ok"})
