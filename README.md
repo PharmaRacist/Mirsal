@@ -13,7 +13,7 @@ Mirsal intercepts some of browser's protocols to the integrated tools inside "No
 
 ## TODO
 
-- [ ] Color Sync - Omit pywalfox
+- [X] Color Sync - Omit pywalfox
 - [ ] Further Ai slop communications
 - [ ] universal ipc messanger
 
