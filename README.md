@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./addon/assets/banner.png" alt="./addon/assets/icons/96.svg" width="280" height="160">
+  <img src="./addon/assets/banner.svg" alt="./addon/assets/icons/96.svg" width="840" height="560">
 </p>
 
 <h1 align="center">Mirsal — مرسال</h1>
