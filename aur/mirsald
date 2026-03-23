@@ -3,39 +3,83 @@ import json
 import os
 import subprocess
 import sys
+import time
 
 sys.path.insert(0, "/usr/lib/noon-mirsal")
 import protocol
 
-if len(sys.argv) > 1 and sys.argv[1].startswith("--"):
+PALETTE_PATH = os.path.join(
+    os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")),
+    "noon",
+    "user",
+    "generated",
+    "colors",
+    "firefox.json",
+)
+
+RELOAD_FLAG = os.path.join(
+    os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")),
+    "noon",
+    "mirsal",
+    "reload.flag",
+)
+
+COMMANDS = {"pull-palette", "reload", "--help"}
+
+if len(sys.argv) > 1 and sys.argv[1] in COMMANDS:
     arg = sys.argv[1]
     if arg == "--help":
-        print("usage: mirsald [--help] [--pull-palette]")
+        print("usage: mirsald [--help] <command>")
         print()
-        print("  --pull-palette    read firefox.json and print the palette")
-        print("  --help            show this message")
+        print("commands:")
+        print("  pull-palette    read firefox.json and print the palette")
+        print("  reload          reload the mirsal browser extension")
         sys.exit(0)
-    elif arg == "--pull-palette":
-        cache = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
-        path = os.path.join(
-            cache, "noon", "user", "generated", "colors", "firefox.json"
-        )
+    elif arg == "pull-palette":
         try:
-            with open(path) as f:
+            with open(PALETTE_PATH) as f:
                 palette = json.load(f)
             print(json.dumps(palette, indent=2))
         except Exception as e:
             print(f"error: {e}", file=sys.stderr)
             sys.exit(1)
         sys.exit(0)
-    else:
-        print(f"mirsald: unknown option '{arg}'", file=sys.stderr)
-        sys.exit(1)
+    elif arg == "reload":
+        try:
+            os.makedirs(os.path.dirname(RELOAD_FLAG), exist_ok=True)
+            with open(RELOAD_FLAG, "w") as f:
+                f.write("")
+            print("reload flag set")
+        except Exception as e:
+            print(f"error: {e}", file=sys.stderr)
+            sys.exit(1)
+        sys.exit(0)
+
+
+def read_palette():
+    with open(PALETTE_PATH) as f:
+        return json.load(f)
+
+
+def push_palette(reload=False):
+    try:
+        palette = read_palette()
+        mtime = os.path.getmtime(PALETTE_PATH)
+        protocol.write(
+            {
+                "type": "palette_colors",
+                "payload": palette,
+                "mtime": mtime,
+                "reload": reload,
+            }
+        )
+    except Exception as e:
+        protocol.write({"type": "palette_colors", "error": str(e)})
+
 
 msg = protocol.read()
-t = msg.get("type")
 
-if t == "downloads.add":
+if msg.get("type") == "downloads.add":
     p = msg.get("payload", {})
     url = p.get("url", "")
     filename = p.get("filename", "").split("/")[-1] or url.split("/")[-1] or "download"
@@ -57,14 +101,28 @@ if t == "downloads.add":
         ]
     )
     protocol.write({"status": "ok"})
-elif t == "palette.get":
-    cache = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
-    path = os.path.join(cache, "noon", "user", "generated", "colors", "firefox.json")
-    try:
-        with open(path) as f:
-            palette = json.load(f)
-        protocol.write({"type": "palette_colors", "payload": palette})
-    except Exception as e:
-        protocol.write({"type": "palette_colors", "error": str(e)})
-else:
+    sys.exit(0)
+
+if msg.get("type") != "watch":
     protocol.write({"status": "ok"})
+    sys.exit(0)
+
+push_palette()
+
+last_mtime = os.path.getmtime(PALETTE_PATH) if os.path.exists(PALETTE_PATH) else 0
+
+while True:
+    time.sleep(0.5)
+
+    reload = os.path.exists(RELOAD_FLAG)
+    if reload:
+        os.remove(RELOAD_FLAG)
+
+    try:
+        mtime = os.path.getmtime(PALETTE_PATH)
+    except Exception:
+        mtime = last_mtime
+
+    if reload or mtime != last_mtime:
+        last_mtime = mtime
+        push_palette(reload=reload)
