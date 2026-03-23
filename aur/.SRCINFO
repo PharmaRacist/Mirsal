@@ -8,6 +8,7 @@ pkgbase = noon-mirsald
 	depends = python
 	source = mirsald::https://raw.githubusercontent.com/pharmaracist/mirsal/main/daemon/mirsald
 	source = protocol.py::https://raw.githubusercontent.com/pharmaracist/mirsal/main/daemon/protocol.py
+	source = mirsal-cli::https://raw.githubusercontent.com/pharmaracist/mirsal/main/daemon/mirsal-cli
 	source = noon_mirsal.json::https://raw.githubusercontent.com/pharmaracist/mirsal/main/daemon/noon_mirsal.json
 	sha256sums = SKIP
 	sha256sums = SKIP

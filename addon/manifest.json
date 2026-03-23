@@ -17,9 +17,13 @@
     "48": "assets/icons/48.svg",
     "96": "assets/icons/96.svg"
   },
-  "permissions": ["downloads", "nativeMessaging"],
+  "permissions": ["downloads", "nativeMessaging", "theme"],
   "background": {
-    "scripts": ["modules/downloads/downloads.js", "main.js"],
+    "scripts": [
+      "modules/downloads/downloads.js",
+      "modules/palette/palette.js",
+      "main.js"
+    ],
     "persistent": true
   }
 }
