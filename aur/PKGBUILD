@@ -8,10 +8,10 @@ url="https://github.com/pharmaracist/mirsal"
 license=('MIT')
 depends=('python')
 source=(
-    "mirsald::https://raw.githubusercontent.com/pharmaracist/mirsal/main/daemon/mirsald"
-    "protocol.py::https://raw.githubusercontent.com/pharmaracist/mirsal/main/daemon/protocol.py"
-    "mirsal-cli::https://raw.githubusercontent.com/pharmaracist/mirsal/main/daemon/mirsal-cli"
-    "noon_mirsal.json::https://raw.githubusercontent.com/pharmaracist/mirsal/main/daemon/noon_mirsal.json"
+    "mirsald::https://raw.githubusercontent.com/pharmaracist/mirsal/main/aur/mirsald"
+    "protocol.py::https://raw.githubusercontent.com/pharmaracist/mirsal/main/aur/protocol.py"
+    "mirsal-cli::https://raw.githubusercontent.com/pharmaracist/mirsal/main/aur/mirsal-cli"
+    "noon_mirsal.json::https://raw.githubusercontent.com/pharmaracist/mirsal/main/aur/noon_mirsal.json"
 )
 sha256sums=('SKIP' 'SKIP' 'SKIP')
 
