@@ -1,64 +1,35 @@
-# Mirsal — مرسال
+<p align="center">
+  <img src="./addons/assets/banner.png" alt="./addons/assets/icons/96.svg" width="280" height="160">
+</p>
 
-Universal browser-to-shell bridge for the Noon shell.
+<h1 align="center">Mirsal — مرسال</h1>
 
-Mirsal intercepts browser downloads and forwards them to the Noon download
-manager running on your system, giving you a unified download experience
-managed from your desktop shell.
+# Core Browser Extension for the Noon shell.
+Mirsal intercepts some of browser's protocols to the integrated tools inside "Noon" 
+
+## Current Capabilities
+
+- Downloads interception
+
+## TODO
+
+- [ ] Color Sync - Omit pywalfox
+- [ ] Further Ai slop communications
+- [ ] universal ipc messanger
 
 ## Requirements
 
-Mirsal requires the **Mirsal native host** to be installed on your system.
-The extension alone cannot communicate with Noon without it.
+Mirsal requires the **noon-mirsald** to be installed on your system.
 
 ### Install the native host
 
 ```bash
-git clone https://github.com/noon-shell/mirsal-host
-cd mirsal-host
-build_libs ./native
+    yay -S noon-mirsald --needed
 ```
-
-This installs:
-- `/usr/local/bin/mirsal` — the native messaging binary
-- `~/.mozilla/native-messaging-hosts/noon_mirsal.json` — the Firefox host manifest
-
-## How it works
-
-```
-Firefox download event
-    → Mirsal intercept the browser download
-    → sends { url, filename, mime, referrer } to mirsald 
-    → native host forwards to Noon via IPC
-    → Noon adds it to DownloadModel and manages the transfer via KIO
-```
-
-## Message format
-
-Every message from the extension to the native host follows:
-
-```json
-{
-    "type": "downloads.add",
-    "payload": {
-        "url":      "https://example.com/file.zip",
-        "filename": "/home/user/Downloads/file.zip",
-        "mime":     "application/zip",
-        "referrer": "https://example.com",
-        "fileSize": 10485760
-    }
-}
-```
-
-## Modules
-
-| Module      | Status | Description                        |
-|-------------|--------|------------------------------------|
-| `downloads` | ✓      | Intercepts and forwards downloads  |
 
 ## Privacy
 
-Mirsal sends data only to the locally installed native host binary on your
-own machine via local Noon shell ipc. No data is sent to any remote server.
+Mirsal sends data only to the locally installed daemon on your
+own machine via local Noon shell ipc. No data is sent to any remote server (source code at pharmaracist/mirsal).
 for more info checkout:
 https://github.com/pharmaracist/noon
