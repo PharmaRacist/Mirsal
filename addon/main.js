@@ -14,6 +14,7 @@ function send(type, payload) {
 browser.browserAction.onClicked.addListener(() => {
   browser.runtime.openOptionsPage();
 });
-Downloads.init(send);
+
 Palette.init();
+Downloads.init(send);
 Shade.init();

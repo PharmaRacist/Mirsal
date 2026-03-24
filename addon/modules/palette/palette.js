@@ -54,6 +54,7 @@ const Palette = (() => {
     if (msg.type !== "palette_colors" || !msg.payload) return;
     _lastMtime = msg.mtime ?? _lastMtime;
     _scheme = msg.payload;
+    browser.storage.local.set({ "palette.scheme": _scheme });
     if (_enabled) applyTheme(_scheme);
     Shade.applyScheme(_scheme);
   }

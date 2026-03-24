@@ -6,7 +6,11 @@
     padding: 0;
 }
 
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600&display=swap");
+@font-face {
+    font-family: "title_font";
+    src: url("./../assets/fonts/zataar_bold.otf") format("opentype");
+    font-weight: 800;
+}
 
 body {
     font-family: system-ui, sans-serif;
@@ -34,23 +38,24 @@ body {
 }
 
 .header h1 {
-    font-family: "Cairo", sans-serif;
-    font-size: 72px;
+    font-family: "title_font";
+    font-size: 92px;
     font-weight: 300;
     color: var(--c-primary);
     letter-spacing: 2px;
-    line-height: 1;
+    line-height: 1.4;
 }
 
 .header h1 span {
     display: block;
     font-family: system-ui, sans-serif;
-    font-size: 13px;
-    font-weight: 400;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--c-on-surface-variant);
-    letter-spacing: 3px;
+    opacity: 0.75;
+    letter-spacing: 8px;
     text-transform: uppercase;
-    margin-top: 8px;
+    margin-top: 10px;
 }
 
 .subtitle {
