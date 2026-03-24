@@ -8,12 +8,12 @@
 Mirsal intercepts some of browser's protocols to the integrated tools inside "Noon" 
 
 ## Current Capabilities
-
-- Downloads interception
+- [X] Downloads interception
+- [X] Color Sync - Omit pywalfox
+- [X] Page colors override - Omit DarkReader
+- [ ] Minimal New tab page
 
 ## TODO
-
-- [X] Color Sync - Omit pywalfox
 - [ ] Further Ai slop communications
 - [ ] universal ipc messanger
 
