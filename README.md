@@ -19,17 +19,24 @@ Mirsal intercepts some of browser's protocols to the integrated tools inside "No
 
 ## Requirements
 
-Mirsal requires the **noon-mirsald** to be installed on your system.
-
-### Install the native host
+- Mirsal requires the **noon-mirsald** to be installed on your system.
 
 ```bash
     yay -S noon-mirsald --needed
 ```
 
+- Copy matugen's template from examples/firefox.json to your matugen configs.
+- Add this snippet to matugen's config.toml 
+
+``` toml 
+    [templates.mirsal]
+    input_path = '~/.config/matugen/templates/applications/firefox.json'
+    output_path = '~/.cache/noon/user/generated/colors/firefox.json'
+    post_hook = 'python /usr/lib/noon-mirsal/mirsald pull-palette'
+```
+
+
 ## Privacy
 
 Mirsal sends data only to the locally installed daemon on your
-own machine via local Noon shell ipc. No data is sent to any remote server (source code at pharmaracist/mirsal).
-for more info checkout:
-https://github.com/pharmaracist/noon
+own machine via local Noon shell ipc. No data is sent to any remote server - source code at https://github.com/pharmaracist/noon
