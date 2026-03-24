@@ -23,19 +23,19 @@
     "default_title": "Mirsal"
   },
   "chrome_url_overrides": {
-    "newtab": "newtab/newtab.html"
+    "newtab": "pages/newtab/newtab.html"
   },
   "options_ui": {
-    "page": "settings/settings.html",
+    "page": "pages/settings/settings.html",
     "open_in_tab": true
   },
   "background": {
     "scripts": [
       "common/config_options.js",
       "common/colors.js",
-      "modules/downloads/downloads.js",
-      "modules/shade/shade.js",
-      "modules/palette/palette.js",
+      "functions/downloads/downloads.js",
+      "functions/shade/shade.js",
+      "functions/palette/palette.js",
       "main.js"
     ],
     "persistent": true
@@ -43,7 +43,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["modules/shade/content.js"],
+      "js": ["functions/shade/content.js"],
       "run_at": "document_start"
     }
   ]

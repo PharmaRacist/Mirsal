@@ -8,7 +8,7 @@
 
 @font-face {
     font-family: "title_font";
-    src: url("../assets/fonts/zataar_bold.otf") format("opentype");
+    src: url("../../assets/fonts/zataar_bold.otf") format("opentype");
     font-weight: 800;
 }
 
