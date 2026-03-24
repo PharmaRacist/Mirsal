@@ -32,7 +32,7 @@
   "background": {
     "scripts": [
       "common/config_options.js",
-      "common/colors.js",
+      "common/css_colors.js",
       "functions/downloads/downloads.js",
       "functions/shade/shade.js",
       "functions/palette/palette.js",

@@ -1,8 +1,8 @@
 function injectPaletteVars(scheme) {
-  let el = document.getElementById("paltte-colors");
+  let el = document.getElementById("palette-colors");
   if (!el) {
     el = document.createElement("style");
-    el.id = "paltte-colors";
+    el.id = "palette-colors";
     document.head.appendChild(el);
   }
   el.textContent = `:root {
@@ -46,7 +46,8 @@ function watchPalette() {
   browser.storage.local.get("palette.scheme").then((r) => {
     if (r["palette.scheme"]) injectPaletteVars(r["palette.scheme"]);
   });
-  browser.storage.onChanged.addListener((changes) => {
+  browser.storage.onChanged.addListener((changes, area) => {
+    if (area !== "local") return;
     if (changes["palette.scheme"]?.newValue) {
       injectPaletteVars(changes["palette.scheme"].newValue);
     }
