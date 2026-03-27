@@ -20,7 +20,7 @@
   },
   "permissions": ["downloads", "nativeMessaging", "theme", "storage", "tabs"],
   "browser_action": {
-    "default_icon": "assets/icons/48.svg",
+    "default_icon": "assets/icons/48.png",
     "default_title": "Mirsal",
     "default_popup": "pages/popup/popup.html"
   },
