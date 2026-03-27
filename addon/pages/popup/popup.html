@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Mirsal</title>
+        <link rel="stylesheet" href="popup.css" />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+    </head>
+    <body>
+        <div class="popup">
+            <header class="header">
+                <span class="logo">مرسـال</span>
+                <button
+                    class="icon-btn"
+                    id="open-settings"
+                    title="Open settings"
+                >
+                    <span class="material-symbols-rounded">settings</span>
+                </button>
+            </header>
+
+            <div class="site-card">
+                <div class="site-identity">
+                    <img class="site-favicon" id="site-favicon" src="" alt="" />
+                    <span class="site-host" id="site-host">—</span>
+                </div>
+                <button class="intercept-toggle" id="intercept-toggle">
+                    <span class="material-symbols-rounded" id="intercept-icon"
+                        >download</span
+                    >
+                </button>
+            </div>
+
+            <div class="status-row">
+                <span
+                    class="material-symbols-rounded status-icon"
+                    id="status-icon"
+                    >check_circle</span
+                >
+                <span class="status-text" id="status-text"
+                    >Intercepting downloads</span
+                >
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="control-row">
+                <span class="material-symbols-rounded row-icon">download</span>
+                <span class="row-label">Downloads</span>
+                <label class="toggle">
+                    <input type="checkbox" id="downloads-enabled" />
+                    <span class="track"></span>
+                </label>
+            </div>
+
+            <div class="control-row">
+                <span class="material-symbols-rounded row-icon">palette</span>
+                <span class="row-label">Palette</span>
+                <label class="toggle">
+                    <input type="checkbox" id="palette-enabled" />
+                    <span class="track"></span>
+                </label>
+            </div>
+
+            <div class="control-row">
+                <span class="material-symbols-rounded row-icon">contrast</span>
+                <span class="row-label">Shade</span>
+                <label class="toggle">
+                    <input type="checkbox" id="shade-enabled" />
+                    <span class="track"></span>
+                </label>
+            </div>
+        </div>
+        <script src="../../common/config_options.js"></script>
+        <script src="../../common/css_colors.js"></script>
+        <script src="popup.js"></script>
+    </body>
+</html>

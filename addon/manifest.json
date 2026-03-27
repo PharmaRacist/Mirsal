@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Mirsal",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "مرسال — universal browser to shell bridge",
   "homepage_url": "https://github.com/noon-shell/mirsal",
   "browser_specific_settings": {
@@ -20,7 +20,8 @@
   "permissions": ["downloads", "nativeMessaging", "theme", "storage", "tabs"],
   "browser_action": {
     "default_icon": "assets/icons/48.svg",
-    "default_title": "Mirsal"
+    "default_title": "Mirsal",
+    "default_popup": "pages/popup/popup.html"
   },
   "chrome_url_overrides": {
     "newtab": "pages/newtab/newtab.html"

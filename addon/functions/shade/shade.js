@@ -29,19 +29,19 @@ const Shade = (() => {
 
   function applyConfig(cfg) {
     const wasEnabled = _enabled;
-    _enabled = cfg["shade.enabled"];
-    _dimMedia = cfg["shade.dimMedia"];
-    _mediaBrightness = cfg["shade.mediaBrightness"];
+    _enabled = cfg["shade.enabled"] ?? _enabled;
+    _dimMedia = cfg["shade.dimMedia"] ?? _dimMedia;
+    _mediaBrightness = cfg["shade.mediaBrightness"] ?? _mediaBrightness;
     if (wasEnabled !== _enabled || _enabled) broadcast();
   }
 
   function init() {
-    browser.storage.local.get(CONFIG_DEFAULTS).then(applyConfig);
-
+    browser.storage.local.get(Object.keys(CONFIG_DEFAULTS)).then((stored) => {
+      applyConfig(Object.assign({}, CONFIG_DEFAULTS, stored));
+    });
     browser.runtime.onMessage.addListener((msg) => {
       if (msg.type === "settings_updated") applyConfig(msg.settings);
     });
-
     browser.tabs.onUpdated.addListener((tabId, info) => {
       if (info.status === "complete") sendToTab(tabId);
     });

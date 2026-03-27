@@ -25,29 +25,30 @@ function showStatus(msg) {
   }, 2000);
 }
 
-function save() {
-  const settings = {};
-  for (const [key, meta] of Object.entries(ELEMENTS)) {
-    const el = document.getElementById(meta.id);
-    settings[key] = meta.type === "checkbox" ? el.checked : parseInt(el.value);
-  }
-  browser.storage.local.set(settings).then(() => {
-    browser.runtime.sendMessage({ type: "settings_updated", settings });
+function saveSingle(key, meta) {
+  const el = document.getElementById(meta.id);
+  const value = meta.type === "checkbox" ? el.checked : parseInt(el.value);
+  browser.storage.local.set({ [key]: value }).then(() => {
+    browser.runtime.sendMessage({
+      type: "settings_updated",
+      settings: { [key]: value },
+    });
     showStatus("saved");
   });
 }
 
 function load() {
-  browser.storage.local.get(DEFAULTS).then((s) => {
+  browser.storage.local.get(Object.keys(CONFIG_DEFAULTS)).then((stored) => {
     for (const [key, meta] of Object.entries(ELEMENTS)) {
       const el = document.getElementById(meta.id);
+      const value = key in stored ? stored[key] : CONFIG_DEFAULTS[key];
       if (meta.type === "checkbox") {
-        el.checked = s[key];
+        el.checked = value;
       } else {
-        el.value = s[key];
+        el.value = value;
         if (meta.display) {
           document.getElementById(meta.display).textContent =
-            s[key] + meta.suffix;
+            value + meta.suffix;
         }
       }
     }
@@ -64,7 +65,7 @@ for (const [key, meta] of Object.entries(ELEMENTS)) {
       }
     });
   }
-  el.addEventListener("change", save);
+  el.addEventListener("change", () => saveSingle(key, meta));
 }
 
 load();

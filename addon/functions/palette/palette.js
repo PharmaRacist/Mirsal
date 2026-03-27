@@ -1,8 +1,7 @@
 const Palette = (() => {
   let _port = null;
-  let _lastMtime = 0;
-  let _enabled = true;
   let _scheme = null;
+  let _enabled = true;
 
   function applyTheme(scheme) {
     browser.theme.update({
@@ -50,23 +49,37 @@ const Palette = (() => {
     });
   }
 
-  function handleMessage(msg) {
-    if (msg.type !== "palette_colors" || !msg.payload) return;
-    _lastMtime = msg.mtime ?? _lastMtime;
-    _scheme = msg.payload;
-    browser.storage.local.set({ "palette.scheme": _scheme });
-    if (_enabled) applyTheme(_scheme);
-    Shade.applyScheme(_scheme);
+  function applyScheme(scheme) {
+    _scheme = scheme;
+    browser.storage.local.set({ "palette.scheme": scheme });
+    if (_enabled) applyTheme(scheme);
+    Shade.applyScheme(scheme);
   }
 
   function applyConfig(cfg) {
-    _enabled = cfg["palette.enabled"];
-    if (!_enabled) browser.theme.reset();
+    _enabled = cfg["palette.enabled"] ?? _enabled;
+    if (!_enabled) {
+      browser.theme.reset();
+      return;
+    }
+    if (_scheme) {
+      applyTheme(_scheme);
+      return;
+    }
+    browser.storage.local.get("palette.scheme").then((stored) => {
+      if (stored["palette.scheme"]) {
+        _scheme = stored["palette.scheme"];
+        applyTheme(_scheme);
+      }
+    });
   }
 
   function connect() {
     _port = browser.runtime.connectNative("noon_mirsal");
-    _port.onMessage.addListener(handleMessage);
+    _port.onMessage.addListener((msg) => {
+      if (msg.type === "palette_colors" && msg.payload)
+        applyScheme(msg.payload);
+    });
     _port.onDisconnect.addListener(() => {
       _port = null;
       setTimeout(connect, 3000);
@@ -75,7 +88,9 @@ const Palette = (() => {
   }
 
   function init() {
-    browser.storage.local.get(CONFIG_DEFAULTS).then(applyConfig);
+    browser.storage.local.get(Object.keys(CONFIG_DEFAULTS)).then((stored) => {
+      applyConfig(Object.assign({}, CONFIG_DEFAULTS, stored));
+    });
     browser.runtime.onMessage.addListener((msg) => {
       if (msg.type === "settings_updated") applyConfig(msg.settings);
       if (msg.type === "palette.request") return Promise.resolve(_scheme);
