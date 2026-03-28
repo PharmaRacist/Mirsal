@@ -7,15 +7,18 @@
 # Core Browser Extension for the Noon shell.
 Mirsal intercepts some of browser's protocols to the integrated tools inside "Noon" 
 
-## Current Capabilities
-- [X] Downloads interception
-- [X] Color Sync - Omit pywalfox
-- [X] Page colors override - Omit DarkReader
-- [ ] Minimal New tab page
+# Repurpose for your own use case 
+- Have a look on the aur/mirsald and repurpose their call back functions on each action and their payload
+- and for the method names each inside their function eg, bookmarks.sync , downloads.add , ..etc those are the called messages inside the mirsald
 
-## TODO
-- [ ] Further Ai slop communications
-- [ ] universal ipc messanger
+## Current Capabilities
+- [X] Bookmarks Syncing
+- [X] Downloads interception
+- [X] Fast Color Sync - Omit pywalfox
+- [X] Page colors override - Omit DarkReader
+- [X] Minimal New tab page
+
+### For more features ideas an issue will be appreciated
 
 ## Requirements
 
@@ -38,5 +41,9 @@ Mirsal intercepts some of browser's protocols to the integrated tools inside "No
 
 ## Privacy
 
-Mirsal sends data only to the locally installed daemon on your
-own machine via local Noon shell ipc. No data is sent to any remote server - source code at https://github.com/pharmaracist/noon
+Mirsal uses native messaging protocol from native firefox APIs to launch some shell ipc commands for certain action
+No data is sent to any remote server 
+
+## Links
+Noon at https://github.com/pharmaracist/Noon
+LibQt at https://github.com/pharmaracist/Noon-libqt

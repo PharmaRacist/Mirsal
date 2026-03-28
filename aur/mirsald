@@ -16,7 +16,6 @@ PALETTE_PATH = os.path.join(
     "colors",
     "firefox.json",
 )
-
 RELOAD_FLAG = os.path.join(
     os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")),
     "noon",
@@ -25,7 +24,6 @@ RELOAD_FLAG = os.path.join(
 )
 
 COMMANDS = {"pull-palette", "reload", "--help"}
-
 if len(sys.argv) > 1 and sys.argv[1] in COMMANDS:
     arg = sys.argv[1]
     if arg == "--help":
@@ -80,49 +78,60 @@ def push_palette(reload=False):
 msg = protocol.read()
 
 if msg.get("type") == "downloads.add":
-    p = msg.get("payload", {})
+    raw = msg.get("payload", "{}")
+    try:
+        p = json.loads(raw) if isinstance(raw, str) else raw
+    except json.JSONDecodeError as e:
+        protocol.write({"status": "error", "error": f"invalid payload json: {e}"})
+        sys.exit(1)
     url = p.get("url", "")
     filename = p.get("filename", "").split("/")[-1] or url.split("/")[-1] or "download"
-    mime = p.get("mime", "") or "application/octet-stream"
-    size = str(p.get("size", -1))
     dest = os.path.join(os.path.expanduser("~"), "Downloads", filename)
+    p["destination"] = dest
+    result = subprocess.run(
+        ["noon", "ipc", "call", "global", "objectDownload", json.dumps(p)],
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        protocol.write(
+            {
+                "type": "downloads.kio_failed",
+                "url": url,
+                "error": result.stderr.decode().strip(),
+            }
+        )
+    else:
+        protocol.write({"status": "ok"})
+    sys.exit(0)
+
+elif msg.get("type") == "bookmarks.sync":
+    bookmarks = msg.get("payload", [])
     subprocess.run(
         [
             "noon",
             "ipc",
             "call",
             "global",
-            "download",
-            url,
-            dest,
-            filename,
-            mime,
-            str(size),
-        ]
+            "feedBookmarks",
+            json.dumps(json.dumps(bookmarks)),
+        ],
+        capture_output=True,
     )
-    protocol.write({"status": "ok"})
-    sys.exit(0)
-
-if msg.get("type") != "watch":
     protocol.write({"status": "ok"})
     sys.exit(0)
 
 push_palette()
 
 last_mtime = os.path.getmtime(PALETTE_PATH) if os.path.exists(PALETTE_PATH) else 0
-
 while True:
     time.sleep(0.5)
-
     reload = os.path.exists(RELOAD_FLAG)
     if reload:
         os.remove(RELOAD_FLAG)
-
     try:
         mtime = os.path.getmtime(PALETTE_PATH)
     except Exception:
         mtime = last_mtime
-
     if reload or mtime != last_mtime:
         last_mtime = mtime
         push_palette(reload=reload)
