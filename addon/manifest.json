@@ -23,6 +23,7 @@
     "nativeMessaging",
     "theme",
     "storage",
+    "bookmarks",
     "tabs",
     "cookies",
     "webRequest",
@@ -44,6 +45,7 @@
     "scripts": [
       "common/config_options.js",
       "common/css_colors.js",
+      "functions/bookmarks/bookmarks.js",
       "functions/downloads/downloads.js",
       "functions/shade/shade.js",
       "functions/palette/palette.js",
