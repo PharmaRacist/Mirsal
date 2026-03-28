@@ -18,7 +18,16 @@
     "96": "assets/icons/96.png",
     "128": "assets/icons/128.png"
   },
-  "permissions": ["downloads", "nativeMessaging", "theme", "storage", "tabs"],
+  "permissions": [
+    "downloads",
+    "nativeMessaging",
+    "theme",
+    "storage",
+    "tabs",
+    "cookies",
+    "webRequest",
+    "<all_urls>"
+  ],
   "browser_action": {
     "default_icon": "assets/icons/browser_icon.svg",
     "default_title": "Mirsal",
