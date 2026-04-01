@@ -3,8 +3,6 @@ const Downloads = (() => {
   let _enabled = true;
   let _blacklist = [];
 
-  const _pendingHeaders = new Map();
-
   function getHost(url) {
     try {
       return new URL(url).hostname;
@@ -13,21 +11,16 @@ const Downloads = (() => {
     }
   }
 
-  function isBlacklisted(host) {
-    return _blacklist.includes(host);
-  }
-
-  async function getActiveTabInfo() {
+  async function getTabOrigin() {
     const [tab] = await browser.tabs.query({
       active: true,
       currentWindow: true,
     });
-    if (!tab?.url) return { host: null, origin: null };
+    if (!tab?.url) return null;
     try {
-      const u = new URL(tab.url);
-      return { host: u.hostname, origin: u.origin };
+      return new URL(tab.url).origin;
     } catch {
-      return { host: null, origin: null };
+      return null;
     }
   }
 
@@ -37,79 +30,55 @@ const Downloads = (() => {
     history[host] = (history[host] ?? 0) + 1;
     browser.storage.local.set({ "downloads.history": history });
   }
-  const _headerWaiters = new Map();
-
-  function onBeforeSendHeaders(details) {
-    const cookie = details.requestHeaders?.find(
-      (h) => h.name.toLowerCase() === "cookie",
-    )?.value;
-    const headers = cookie ? { Cookie: cookie } : {};
-
-    if (_headerWaiters.has(details.url)) {
-      _headerWaiters.get(details.url)(headers);
-      return;
-    }
-
-    if (cookie) {
-      _pendingHeaders.set(details.url, headers);
-      setTimeout(() => _pendingHeaders.delete(details.url), 30_000);
-    }
-  }
 
   async function onCreated(item) {
     if (!_enabled) return;
-    if (item.url.startsWith("blob:") || item.url.startsWith("data:")) return;
 
-    const { host: tabHost, origin: tabOrigin } = await getActiveTabInfo();
-    const downloadHost = getHost(item.url);
-    const effectiveHost = tabHost ?? downloadHost;
+    const host = getHost(item.url);
+    const tabOrigin = await getTabOrigin();
+    const effectiveHost = tabOrigin ? getHost(tabOrigin) : host;
 
-    if (isBlacklisted(effectiveHost) || isBlacklisted(downloadHost)) return;
-
-    // Wait up to 2s for onBeforeSendHeaders to fire for this URL
-    const capturedHeaders = await new Promise((resolve) => {
-      if (_pendingHeaders.has(item.url)) {
-        resolve(_pendingHeaders.get(item.url));
-        _pendingHeaders.delete(item.url);
-        return;
-      }
-      const timeout = setTimeout(() => {
-        off();
-        resolve({});
-      }, 2000);
-      function off() {
-        clearTimeout(timeout);
-        _headerWaiters.delete(item.url);
-      }
-      _headerWaiters.set(item.url, (headers) => {
-        off();
-        resolve(headers);
-      });
-    });
-
-    try {
-      await browser.downloads.cancel(item.id);
-      await browser.downloads.erase({ id: item.id });
-    } catch (e) {
-      console.error("Mirsal downloads: failed to cancel browser download —", e);
-      return;
-    }
+    if (_blacklist.includes(host) || _blacklist.includes(effectiveHost)) return;
 
     recordHistory(effectiveHost);
 
-    const meta = {
-      url: item.url,
-      filename: item.filename ?? "",
-      mime: item.mime ?? "application/octet-stream",
-      fileSize: item.fileSize ?? -1,
-      headers: {
-        Referer: item.referrer || tabOrigin || "",
-        Origin: tabOrigin || "",
-        ...capturedHeaders,
-      },
-    };
+    _send(
+      "downloads.add",
+      JSON.stringify({
+        id: item.id,
+        url: item.url,
+        filename: item.filename ?? "",
+        mime: item.mime ?? "application/octet-stream",
+        fileSize: item.fileSize ?? -1,
+        referrer: item.referrer ?? "",
+        headers: {
+          Referer: item.referrer || tabOrigin || "",
+          Origin: tabOrigin || "",
+        },
+      }),
+    );
+  }
 
-    _send("downloads.add", JSON.stringify(meta));
+  function onChanged(delta) {
+    if (!_enabled) return;
+    _send(
+      "downloads.changed",
+      JSON.stringify({
+        id: delta.id,
+        filename: delta.filename,
+        totalBytes: delta.totalBytes,
+        bytesReceived: delta.bytesReceived,
+        state: delta.state,
+        paused: delta.paused,
+        error: delta.error,
+        mime: delta.mime,
+      }),
+    );
+  }
+
+  function onErased(id) {
+    if (!_enabled) return;
+    _send("downloads.erased", JSON.stringify({ id }));
   }
 
   function applyConfig(cfg) {
@@ -125,25 +94,25 @@ const Downloads = (() => {
         applyConfig(Object.assign({}, CONFIG_DEFAULTS, stored)),
       );
 
-    browser.webRequest.onBeforeSendHeaders.addListener(
-      onBeforeSendHeaders,
-      { urls: ["<all_urls>"] },
-      ["requestHeaders"],
-    );
-
     browser.downloads.onCreated.addListener(onCreated);
+    browser.downloads.onChanged.addListener(onChanged);
+    browser.downloads.onErased.addListener(onErased);
 
     browser.runtime.onMessage.addListener((msg) => {
       if (msg.type === "settings_updated") applyConfig(msg.settings);
       if (msg.type === "blacklist_updated") _blacklist = msg.blacklist ?? [];
-      if (msg.type === "downloads.kio_failed")
-        browser.downloads.download({ url: msg.url });
+      if (msg.type === "downloads.pause") browser.downloads.pause(msg.id);
+      if (msg.type === "downloads.resume") browser.downloads.resume(msg.id);
+      if (msg.type === "downloads.cancel") browser.downloads.cancel(msg.id);
+      if (msg.type === "downloads.open") browser.downloads.open(msg.id);
+      if (msg.type === "downloads.show") browser.downloads.show(msg.id);
     });
   }
 
   function destroy() {
-    browser.webRequest.onBeforeSendHeaders.removeListener(onBeforeSendHeaders);
     browser.downloads.onCreated.removeListener(onCreated);
+    browser.downloads.onChanged.removeListener(onChanged);
+    browser.downloads.onErased.removeListener(onErased);
     _send = null;
   }
 

@@ -1,30 +1,24 @@
 #!/usr/bin/env python3
+import errno
 import json
 import os
+import select
 import subprocess
 import sys
-import time
 
 sys.path.insert(0, "/usr/lib/noon-mirsal")
 import protocol
 
 PALETTE_PATH = os.path.join(
     os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")),
-    "noon",
-    "user",
-    "generated",
-    "colors",
-    "firefox.json",
+    "noon", "user", "generated", "colors", "firefox.json",
 )
 RELOAD_FLAG = os.path.join(
     os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")),
-    "noon",
-    "mirsal",
-    "reload.flag",
+    "noon", "mirsal", "reload.flag",
 )
 
-COMMANDS = {"pull-palette", "reload", "--help"}
-if len(sys.argv) > 1 and sys.argv[1] in COMMANDS:
+if len(sys.argv) > 1 and sys.argv[1] in {"pull-palette", "reload", "--help"}:
     arg = sys.argv[1]
     if arg == "--help":
         print("usage: mirsald [--help] <command>")
@@ -54,80 +48,119 @@ if len(sys.argv) > 1 and sys.argv[1] in COMMANDS:
         sys.exit(0)
 
 
-def read_palette():
-    with open(PALETTE_PATH) as f:
-        return json.load(f)
+def _xdg_download_dir():
+    try:
+        with open(os.path.expanduser("~/.config/user-dirs.dirs")) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("XDG_DOWNLOAD_DIR="):
+                    val = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    return val.replace("$HOME", os.path.expanduser("~"))
+    except OSError:
+        pass
+    return os.path.expanduser("~/Downloads")
+
+
+def consume_reload_flag():
+    try:
+        os.remove(RELOAD_FLAG)
+        return True
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            return False
+        raise
 
 
 def push_palette(reload=False):
     try:
-        palette = read_palette()
+        with open(PALETTE_PATH) as f:
+            palette = json.load(f)
         mtime = os.path.getmtime(PALETTE_PATH)
-        protocol.write(
-            {
-                "type": "palette_colors",
-                "payload": palette,
-                "mtime": mtime,
-                "reload": reload,
-            }
-        )
+        protocol.write({
+            "type": "palette_colors",
+            "payload": palette,
+            "mtime": mtime,
+            "reload": reload,
+        })
     except Exception as e:
         protocol.write({"type": "palette_colors", "error": str(e)})
 
 
-msg = protocol.read()
-
-if msg.get("type") == "downloads.add":
-    raw = msg.get("payload", "{}")
-    try:
-        p = json.loads(raw) if isinstance(raw, str) else raw
-    except json.JSONDecodeError as e:
-        protocol.write({"status": "error", "error": f"invalid payload json: {e}"})
-        sys.exit(1)
-    url = p.get("url", "")
-    filename = p.get("filename", "").split("/")[-1] or url.split("/")[-1] or "download"
-    dest = os.path.join(os.path.expanduser("~"), "Downloads", filename)
-    p["destination"] = dest
+def ipc_call(method, payload):
     result = subprocess.run(
-        ["noon", "ipc", "call", "global", "objectDownload", json.dumps(p)],
+        ["noon", "ipc", "call", "mirsal", method, payload],
         capture_output=True,
     )
-    if result.returncode != 0:
-        protocol.write(
-            {
-                "type": "downloads.kio_failed",
-                "url": url,
-                "error": result.stderr.decode().strip(),
-            }
-        )
-    else:
+    return result.returncode == 0, result.stderr.decode().strip()
+
+
+def feed_download(msg_type, data):
+    ipc_call("feedDownloadInfo", json.dumps({"type": msg_type, "data": data}))
+
+
+def handle_message(msg):
+    t = msg.get("type", "")
+
+    if t == "downloads.add":
+        raw = msg.get("payload", "{}")
+        try:
+            p = json.loads(raw) if isinstance(raw, str) else raw
+        except json.JSONDecodeError as e:
+            protocol.write({"status": "error", "error": f"invalid payload json: {e}"})
+            return
+        filename = p.get("filename", "").split("/")[-1] or p.get("url", "").split("/")[-1] or "download"
+        p["destination"] = os.path.join(_xdg_download_dir(), filename)
+        feed_download("downloads.add", p)
         protocol.write({"status": "ok"})
-    sys.exit(0)
 
-elif msg.get("type") == "bookmarks.sync":
-    bookmarks = msg.get("payload", [])
-    subprocess.run(
-        [
-            "noon",
-            "ipc",
-            "call",
-            "global",
-            "feedBookmarks",
-            json.dumps(json.dumps(bookmarks)),
-        ],
-        capture_output=True,
-    )
-    protocol.write({"status": "ok"})
-    sys.exit(0)
+    elif t == "downloads.changed":
+        raw = msg.get("payload", "{}")
+        try:
+            p = json.loads(raw) if isinstance(raw, str) else raw
+        except json.JSONDecodeError:
+            return
+        feed_download("downloads.changed", p)
 
-push_palette()
+    elif t == "downloads.erased":
+        raw = msg.get("payload", "{}")
+        try:
+            p = json.loads(raw) if isinstance(raw, str) else raw
+        except json.JSONDecodeError:
+            return
+        feed_download("downloads.erased", p)
+
+    elif t == "bookmarks.sync":
+        bookmarks = msg.get("payload", [])
+        ok, err = ipc_call("feedBookmarks", json.dumps(json.dumps(bookmarks)))
+        if not ok:
+            protocol.write({"status": "error", "error": err})
+        else:
+            protocol.write({"status": "ok"})
+
+    elif t == "watch":
+        push_palette()
+
 
 last_mtime = os.path.getmtime(PALETTE_PATH) if os.path.exists(PALETTE_PATH) else 0
+
+r, _, _ = select.select([sys.stdin], [], [], 5.0)
+if not r:
+    push_palette()
+else:
+    handle_message(protocol.read())
+
 while True:
-    time.sleep(0.5)
-    reload = os.path.exists(RELOAD_FLAG)
-    if reload:
-        os.remove(RELOAD_FLAG)
+    r, _, _ = select.select([sys.stdin], [], [], 0.5)
+    if r:
+        try:
+            msg = protocol.read()
+            if msg is None:
+                break
+            handle_message(msg)
+        except EOFError:
+            break
+
+    reload = consume_reload_flag()
     try:
         mtime = os.path.getmtime(PALETTE_PATH)
     except Exception:

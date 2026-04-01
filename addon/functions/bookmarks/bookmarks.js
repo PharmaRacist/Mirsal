@@ -6,7 +6,6 @@ const Bookmarks = (() => {
     let tree;
     try {
       tree = await browser.bookmarks.getTree();
-      console.log("Mirsal bookmarks: got tree", tree);
     } catch (e) {
       console.error("Mirsal bookmarks: getTree failed", e);
       return;
@@ -21,14 +20,18 @@ const Bookmarks = (() => {
       }
     }
     walk(tree);
-    console.log("Mirsal bookmarks: sending", bookmarks.length, "bookmarks");
 
+    console.log("Mirsal bookmarks: sending", bookmarks.length, "bookmarks");
     try {
       const response = await browser.runtime.sendNativeMessage(NATIVE_HOST, {
         type: "bookmarks.sync",
         payload: bookmarks,
       });
-      console.log("Mirsal bookmarks: daemon response", response);
+      if (response.status === "ok") {
+        console.log("Mirsal bookmarks: sync ok");
+      } else {
+        console.error("Mirsal bookmarks: daemon error", response.error);
+      }
     } catch (e) {
       console.error("Mirsal bookmarks: sendNativeMessage failed", e);
     }

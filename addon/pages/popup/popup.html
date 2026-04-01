@@ -12,7 +12,10 @@
     <body>
         <div class="popup">
             <header class="header">
-                <span class="logo">مرسـال</span>
+                <div class="logo-wrap">
+                    <span class="logo">مرسـال</span>
+                    <span class="logo-dot"></span>
+                </div>
                 <button
                     class="icon-btn"
                     id="open-settings"
@@ -21,57 +24,72 @@
                     <span class="material-symbols-rounded">settings</span>
                 </button>
             </header>
-
-            <div class="site-card">
-                <div class="site-identity">
-                    <img class="site-favicon" id="site-favicon" src="" alt="" />
-                    <span class="site-host" id="site-host">—</span>
+            <div class="layer-1-card">
+                <div class="site-card">
+                    <div class="site-identity">
+                        <div class="favicon-wrap">
+                            <img
+                                class="site-favicon"
+                                id="site-favicon"
+                                src=""
+                                alt=""
+                            />
+                        </div>
+                        <span class="site-host" id="site-host">—</span>
+                    </div>
+                    <div class="site-actions">
+                        <button class="action-chip" id="downloads-toggle">
+                            <span
+                                class="material-symbols-rounded chip-icon"
+                                id="downloads-icon"
+                                >download</span
+                            >
+                        </button>
+                        <button class="action-chip" id="shade-toggle">
+                            <span
+                                class="material-symbols-rounded chip-icon"
+                                id="shade-icon"
+                                >contrast</span
+                            >
+                        </button>
+                    </div>
                 </div>
-                <button class="intercept-toggle" id="intercept-toggle">
-                    <span class="material-symbols-rounded" id="intercept-icon"
-                        >download</span
-                    >
-                </button>
-            </div>
-
-            <div class="status-row">
-                <span
-                    class="material-symbols-rounded status-icon"
-                    id="status-icon"
-                    >check_circle</span
-                >
-                <span class="status-text" id="status-text"
-                    >Intercepting downloads</span
-                >
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="control-row">
-                <span class="material-symbols-rounded row-icon">download</span>
-                <span class="row-label">Downloads</span>
-                <label class="toggle">
-                    <input type="checkbox" id="downloads-enabled" />
-                    <span class="track"></span>
-                </label>
-            </div>
-
-            <div class="control-row">
-                <span class="material-symbols-rounded row-icon">palette</span>
-                <span class="row-label">Palette</span>
-                <label class="toggle">
-                    <input type="checkbox" id="palette-enabled" />
-                    <span class="track"></span>
-                </label>
-            </div>
-
-            <div class="control-row">
-                <span class="material-symbols-rounded row-icon">contrast</span>
-                <span class="row-label">Shade</span>
-                <label class="toggle">
-                    <input type="checkbox" id="shade-enabled" />
-                    <span class="track"></span>
-                </label>
+                <div class="control-row">
+                    <div class="row-icon-wrap">
+                        <span class="material-symbols-rounded row-icon"
+                            >download</span
+                        >
+                    </div>
+                    <span class="row-label">Downloads</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="downloads-enabled" />
+                        <span class="track"></span>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <div class="row-icon-wrap">
+                        <span class="material-symbols-rounded row-icon"
+                            >palette</span
+                        >
+                    </div>
+                    <span class="row-label">Palette</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="palette-enabled" />
+                        <span class="track"></span>
+                    </label>
+                </div>
+                <div class="control-row">
+                    <div class="row-icon-wrap">
+                        <span class="material-symbols-rounded row-icon"
+                            >contrast</span
+                        >
+                    </div>
+                    <span class="row-label">Shade</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="shade-enabled" />
+                        <span class="track"></span>
+                    </label>
+                </div>
             </div>
         </div>
         <script src="../../common/config_options.js"></script>

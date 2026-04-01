@@ -3,13 +3,24 @@ const Shade = (() => {
   let _enabled = true;
   let _dimMedia = true;
   let _mediaBrightness = 85;
+  let _whitelist = [];
 
-  function sendToTab(tabId) {
+  function isAllowed(url) {
+    if (!url) return false;
+    try {
+      return _whitelist.includes(new URL(url).hostname);
+    } catch {
+      return false;
+    }
+  }
+
+  function sendToTab(tab) {
+    const allowed = isAllowed(tab.url);
     browser.tabs
-      .sendMessage(tabId, {
+      .sendMessage(tab.id, {
         type: "shade_update",
         scheme: _scheme,
-        enabled: _enabled,
+        enabled: _enabled && allowed,
         dimMedia: _dimMedia,
         mediaBrightness: _mediaBrightness,
       })
@@ -18,7 +29,7 @@ const Shade = (() => {
 
   function broadcast() {
     browser.tabs.query({}).then((tabs) => {
-      for (const tab of tabs) sendToTab(tab.id);
+      for (const tab of tabs) sendToTab(tab);
     });
   }
 
@@ -32,6 +43,7 @@ const Shade = (() => {
     _enabled = cfg["shade.enabled"] ?? _enabled;
     _dimMedia = cfg["shade.dimMedia"] ?? _dimMedia;
     _mediaBrightness = cfg["shade.mediaBrightness"] ?? _mediaBrightness;
+    _whitelist = cfg["shade.whitelist"] ?? _whitelist;
     if (wasEnabled !== _enabled || _enabled) broadcast();
   }
 
@@ -41,9 +53,13 @@ const Shade = (() => {
     });
     browser.runtime.onMessage.addListener((msg) => {
       if (msg.type === "settings_updated") applyConfig(msg.settings);
+      if (msg.type === "whitelist_updated") {
+        _whitelist = msg.whitelist ?? [];
+        broadcast();
+      }
     });
-    browser.tabs.onUpdated.addListener((tabId, info) => {
-      if (info.status === "complete") sendToTab(tabId);
+    browser.tabs.onUpdated.addListener((tabId, info, tab) => {
+      if (info.status === "complete") sendToTab(tab);
     });
   }
 
