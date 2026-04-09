@@ -12,6 +12,12 @@
     font-weight: 800;
 }
 
+@font-face {
+    font-family: "icons";
+    src: url("../../assets/fonts/M3Icons.ttf") format("truetype");
+    font-weight: 800;
+}
+
 body {
     font-family: system-ui, sans-serif;
     font-size: 14px;

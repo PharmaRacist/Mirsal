@@ -16,8 +16,14 @@
     src: url("../../assets/fonts/GoogleSansFlex.ttf") format("truetype");
 }
 
+@font-face {
+    font-family: "icons";
+    src: url("../../assets/fonts/M3Icons.ttf") format("truetype");
+    font-weight: 800;
+}
+
 .material-symbols-rounded {
-    font-family: "Material Symbols Rounded";
+    font-family: "icons";
     font-weight: normal;
     font-style: normal;
     font-size: 20px;
